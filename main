@@ -1,0 +1,51 @@
+//
+// Created by h on 18-8-15.
+//
+#include <iostream>
+#include <cmath>
+#include <limits>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include "SE3.h"
+#include <fstream>
+
+
+
+
+
+
+int main()
+{
+    std::cout<<"pnp opti...\n";
+    Eigen::Matrix3d R;
+    R<<0.9978662026232452, -0.05167241669574823, 0.03991244185821538,
+       0.0505958920800001, 0.9983397626650758, 0.02752769489929838,
+       -0.04126860025362437, -0.02544955077522656, 0.9988239199170421;
+    Eigen::Matrix<double,3,1> T;
+    T<<-0.6361298163857759, -0.03753650998182134,0.3069292389205321;
+    //SE3 se();
+    SE3 se(R,T);
+    Eigen::Matrix3d K;
+    K<<520.9,0,325.1,0,521.0,247.9,0,0,1;
+    Eigen::VectorXd inputs(76*3,1);
+    Eigen::VectorXd measOutput(76*2,1);
+    std::ifstream inputstream("/home/h/CSAPP/C++PrimerPlusPlus/12/qq/pnpOptimization/3ddata.txt");
+    std::ifstream outputstream("/home/h/CSAPP/C++PrimerPlusPlus/12/qq/pnpOptimization/2ddata.txt");
+    int i=0;
+    while(inputstream.good()&&outputstream.good())
+    {
+        inputstream>>inputs(3*i+0,0)>>inputs(3*i+1,0)>>inputs(3*i+2,0);
+        outputstream>>measOutput(2*i+0,0)>>measOutput(2*i+1,0);
+        i++;
+    }
+    std::cout<<"i="<<i<<std::endl;
+
+
+    se.GN(inputs,measOutput,K);
+
+    std::cout<<"R:\n"<<se.q_.conjugate().toRotationMatrix()<<std::endl;
+    std::cout<<"T: "<<se.T_.transpose()<<std::endl;
+//    std::cout<<"optimization ...\n";
+    return 0;
+}
+
